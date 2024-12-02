@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package store;
+option go_package = "pkg/store/proto";
+
+import "google/protobuf/timestamp.proto";
+
+// Service definition
+service StoreService {
+  rpc CreateStore(CreateStoreRequest) returns (CreateStoreResponse);
+}
+
+// Request and Response Messages
+message CreateStoreRequest {
+  BasicInformation basic_information = 1; // Required
+  Location location = 2;                  // Required
+  OperationalHours operational_hours = 3; // Required
+  TaxAndPayment tax_and_payment = 4;      // Required
+  DeliveryConfiguration delivery_configuration = 5; // Required
+}
+
+message BasicInformation {
+  string store_name = 1;                 // Required
+  string store_type = 2;                 // Required
+  string store_image = 3;                // Optional, URL or base64-encoded image
+  bool is_manager_same_as_owner = 4;     // Required
+  string contact_number = 5;             // Required, E.164 format
+  string shop_manager_id = 6;            // Required if is_manager_same_as_owner is false
+}
+
+message Location {
+  GpsCoordinates gps_coordinates = 1;    // Required
+  string building_number = 2;            // Optional
+  string floor = 3;                      // Optional
+  string area = 4;                       // Required
+  string city = 5;                       // Required
+  string pincode = 6;                    // Required
+  string nearby_landmark = 7;            // Optional
+}
+
+message GpsCoordinates {
+  double latitude = 1;                   // Required
+  double longitude = 2;                  // Required
+}
+
+message OperationalHours {
+  bool is_open_24_hours = 1;             // Required
+  string opening_time = 2;               // Required if is_open_24_hours is false, format HH:MM
+  string closing_time = 3;               // Required if is_open_24_hours is false, format HH:MM
+  bool is_own_pickup_enabled = 4;        // Required
+  string own_pickup_ready_time = 5;      // Required if is_own_pickup_enabled is true, options: '15 minutes', '30 minutes', '1 hour', '2 hours'
+}
+
+message TaxAndPayment {
+  bool gst_registered = 1;               // Required
+  string gst_number = 2;                 // Required if gst_registered is true
+  bool is_payment_gateway_enabled = 3;   // Required
+  BankInformation bank_information = 4;  // Required if is_payment_gateway_enabled is true
+}
+
+message BankInformation {
+  string account_holder_name = 1;        // Required if is_payment_gateway_enabled is true
+  string bank_account_number = 2;        // Required if is_payment_gateway_enabled is true
+  string bank_ifsc_code = 3;             // Required if is_payment_gateway_enabled is true
+}
+
+message DeliveryConfiguration {
+  bool is_delivery_enabled = 1;          // Required
+  string delivery_location_type = 2;     // Required if is_delivery_enabled is true, options: 'PAN India', 'City', 'Radius', 'International'
+  int32 delivery_radius_km = 3;          // Required if delivery_location_type is 'Radius'
+  repeated string delivery_locations = 4;// Required if delivery_location_type is 'City' or 'International'
+  double free_delivery_min_order = 5;    // Optional
+  double delivery_fee_if_min_not_met = 6;// Optional
+  string estimated_delivery_time = 7;    // Optional
+}
+
+message CreateStoreResponse {
+  string status = 1;                     // Success or error status
+  string message = 2;                    // Detailed message
+  StoreData data = 3;                    // Store details
+}
+
+message StoreData {
+  string store_id = 1;                   // Generated store ID
+  string store_name = 2;                 // Name of the store
+  google.protobuf.Timestamp created_at = 3; // Timestamp when the store was created
+}

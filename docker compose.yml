@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ourzhop
+    restart: always
+    environment:
+      POSTGRES_USER: ourzhop
+      POSTGRES_PASSWORD: ourzhop
+      POSTGRES_DB: ourzhop
+    ports:
+      - "5432:5432"
+    volumes:
+      - store_data:/var/lib/postgresql/data
+
+volumes:
+  store_data:
